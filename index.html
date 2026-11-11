@@ -204,7 +204,7 @@
 
   <section class="wish-box" aria-labelledby="wish-title">
     <h2 id="wish-title">Your turn to make a wish</h2>
-    <p>Type it below and send it to the stars. It isn’t saved anywhere, so only the sky will know.</p>
+    <p>Type it below and send it to the stars. Only the sky and I will know.</p>
     <div class="wish-row">
       <label class="sr-only" for="wish-input">Your wish</label>
       <input id="wish-input" type="text" maxlength="120" placeholder="I wish…" autocomplete="off">
@@ -219,6 +219,9 @@
 <audio id="song" loop preload="auto" src="song.mp3"></audio>
 
 <script>
+// Paste your Web3Forms access key between the quotes so her wishes are emailed to you.
+const WISH_KEY = '3ca87e96-1253-4509-840f-14df0e16aac1';
+
 (() => {
   const root = document.documentElement, body = document.body;
   const canvas = document.getElementById('sky'), ctx = canvas.getContext('2d');
@@ -335,9 +338,21 @@
   const wishes = [], comets = [];
   const wishInput = document.getElementById('wish-input');
   const wishDone = document.getElementById('wish-done');
+  function deliverWish(text){
+    if (!WISH_KEY || WISH_KEY.indexOf('PASTE_') === 0) return;
+    try {
+      fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ access_key: WISH_KEY, subject: 'She made an 11:11 wish ✨', from_name: 'Your fairy page', message: text, sent_at: new Date().toString() }),
+        keepalive: true
+      }).catch(() => {});
+    } catch (e) {}
+  }
   function sendWish(){
     const text = wishInput.value.trim();
     if (!text) { wishDone.textContent = 'Type your wish first.'; wishInput.focus(); return; }
+    deliverWish(text);
     const r = wishInput.getBoundingClientRect();
     wishInput.value = '';
     wishInput.blur();
